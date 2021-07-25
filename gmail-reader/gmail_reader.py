@@ -24,7 +24,7 @@ print(f'Getting last {NUM_MESSAGES} emails...\n')
 def getEmails(dateStr):
 	files = []
 
-	print(f"Checking messages after date:{dateStr}")
+	print(f"Checking emails after date:{dateStr}")
 	# Variable creds will store the user access token.
 	# If no valid token found, we will create one.
 	creds = None
