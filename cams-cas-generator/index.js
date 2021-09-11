@@ -7,7 +7,7 @@ const emoji = require('node-emoji');
 const { validateEmail, validatePassword } = require('./validators');
 
 const URL = 'https://new.camsonline.com/Investors/Statements/Consolidated-Account-Statement';
-const TYPE_DELAY_IN_MS = 80;
+const TYPE_DELAY_IN_MS = 20;
 const CLICK_DELAY_IN_MS = 0;
 const SERVICE_CALL_DELAY_IN_MS = 1000;
 
@@ -74,26 +74,36 @@ const run = async(inputs) => {
   inputs = validateInputs(inputs);
   //return inputs
   
+  let puppeteerArgs = {
+    args: chromium.args,
+    defaultViewport: chromium.defaultViewport,
+    executablePath: await chromium.executablePath,
+    headless: chromium.headless && inputs.headless
+  };
+
+  console.log("puppeteer args: ", puppeteerArgs);
+
   const browser = await puppeteer.launch({
     args: chromium.args,
     defaultViewport: chromium.defaultViewport,
     executablePath: await chromium.executablePath,
-    headless: inputs.headless
+    headless: chromium.headless && inputs.headless
   });
 
   console.log("UserAgent: ", await browser.userAgent());
   
   let page = await browser.newPage();
-  await page.goto(URL, { waitUntil: 'networkidle0', timeout: 0 });
+  await page.goto(URL, { waitUntil: 'load', timeout: 0 });
 
   // Accept the cookie dialog
   const radioAcceptSelector = '#mat-radio-2';
   await page.waitForSelector(radioAcceptSelector);
+  //const radioAcceptButton = await page.$(radioAcceptSelector);
   await page.$eval(radioAcceptSelector, e => e.firstElementChild.click());
   //await radioAcceptButton.click({clickCount:2});
   
   // verify if button is selected
-  let isSelected = await page.$eval('#mat-radio-2', e => e.classList.contains('mat-radio-checked'));
+  let isSelected = await page.$eval(radioAcceptSelector, e => e.classList.contains('mat-radio-checked'));
   if(!isSelected) {
     throw new Error('Accept radio button not selected.');
   }
